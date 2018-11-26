@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="../js/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="../js/bootstrap-fileinput/css/fileinput.min.css" />
+    <title>添加商品</title>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    商品
+                </div>
+                <form class="form-horizontal">
+
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">商品名:</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" id="productName">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">商品图片:</label>
+                        <div class="col-sm-6">
+                            <input class="form-control"  type="file" id="productImage" name="productImage"/>
+                            <input class="form-control"  type="text" id="imagePath"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">商品价格:</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" id="price">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">库存:</label>
+                        <div class="col-sm-6">
+                            <input type="text" class="form-control" id="stock">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label  class="col-sm-2 control-label">品牌:</label>
+                        <div class="col-sm-6" id="brandDiv">
+
+                        </div>
+                    </div>
+                    <div class="form-group" id="cateDiv">
+                        <label  class="col-sm-2 control-label">分类:</label>
+
+
+
+                    </div>
+
+
+
+                </form>
+            </div>
+            <div style="text-align: center;">
+                <button type="button" class="btn btn-primary" onclick="addProduct();"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span>添加</button>
+                <button type="button" class="btn btn-info" ><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>重置</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+<script src="../js/jquery-1.12.4.js"></script>
+<!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+<script src="../js/bootstrap/js/bootstrap.min.js"></script>
+<script src="../js/bootstrap-fileinput/js/fileinput.js"></script>
+<script src="../js/bootstrap-fileinput/js/locales/zh.js"></script>
+
+<script>
+    $(function() {
+        initCategory(0);
+        initBrand();
+        initImage();
+    })
+
+    function addProduct() {
+        var v_productName = $("#productName").val();
+        var v_imagePath = $("#imagePath").val();
+        var v_price = $("#price").val();
+        var v_stock = $("#stock").val();
+        var v_brandId = $("#brandSelect").val();
+
+        var v_cate1 =  $("select[name='categorySelect']")[0].value;
+        var v_cate2 =  $("select[name='categorySelect']")[1].value;
+        var v_cate3 =  $("select[name='categorySelect']")[2].value;
+
+        var v_cateInfo = $("input[name='categoryName']")[0].value+"==="+$("input[name='categoryName']")[1].value+"==="+$("input[name='categoryName']")[2].value;
+
+        var param = {};
+        param.productName = v_productName;
+        param.productImage = v_imagePath;
+        param.price = v_price;
+        param.stock = v_stock;
+        param.brandId = v_brandId;
+        param.cate1 = v_cate1;
+        param.cate2 = v_cate2;
+        param.cate3 = v_cate3;
+        param.cateInfo = v_cateInfo;
+
+        $.ajax({
+            type:"post",
+            url:"/products",
+            data:param,
+            success:function (result) {
+                if (result.code == 200) {
+                    // 跳转到列表页面
+                    location.href="/product/list.html";
+                }
+            }
+        })
+
+
+
+    }
+
+    function initImage() {
+        // 设置fileinput的基本配置信息
+        var settings = {
+            uploadUrl: "<%=request.getContextPath()%>/product/uploadImage.jhtml", //上传的地址
+            enctype: 'multipart/form-data',
+            showUpload : false,
+            showRemove : false,
+            language : 'zh',
+            allowedPreviewTypes : [ 'image' ],
+            allowedFileExtensions : [ 'jpg', 'png', 'gif' ],
+            // 2m
+            maxFileSize : 2000
+        };
+
+        // 初始化fileinput
+        $("#productImage").fileinput(settings).on("fileuploaded", function (event, t, previewId, index) {
+            // 获取服务端给客户端的响应
+            var result = t.response;
+            if (result.code == 200) {
+                $("#imagePath").val(result.data);
+            }
+        });
+    }
+    
+    function initBrand() {
+        $.ajax({
+            type:"get",
+            url:"/brand/list",
+            success:function (result) {
+                if (result.code == 200) {
+                    var v_brandList = result.data;
+                    var result = '<select class="form-control" id="brandSelect"><option value="-1">===请选择===</option> ';
+
+                    for (var i = 0; i < v_brandList.length; i++) {
+                        result+="<option value='"+v_brandList[i].id+"'>"+v_brandList[i].brandName+"</option>";
+                    }
+
+                    result += "</select>";
+
+                    $("#brandDiv").append(result);
+                }
+            }
+        })
+    }
+
+    function initCategory(id, obj) {
+        $.ajax({
+            type:"get",
+            url:"/category/list?id="+id,
+            success:function (result) {
+                if (result.code == 200) {
+                    // 先清除
+                    // 如果obj存在且不为空
+                    if (obj) {
+                        // 清除其他的分类
+                        $(obj).parent().nextAll().remove();
+                        // 赋值
+                        var v_index = obj.selectedIndex;
+                        $(obj).prev().val(obj.options[v_index].text);
+                    }
+
+
+                    var v_cateList = result.data;
+                    if (v_cateList.length == 0) {
+                        return;
+                    }
+                    var result = '<div class="col-sm-2" ><input type="text" name="categoryName"/><select class="form-control" onchange="initCategory(this.value, this)" name="categorySelect"><option value="-1">===请选择===</option> ';
+
+                    for (var i = 0; i < v_cateList.length; i++) {
+                        result+="<option value='"+v_cateList[i].id+"'>"+v_cateList[i].categoryName+"</option>";
+                    }
+
+                    result += "</select></div>";
+
+                    $("#cateDiv").append(result);
+                }
+            }
+        })
+    }
+</script>
+</body>
+</html>

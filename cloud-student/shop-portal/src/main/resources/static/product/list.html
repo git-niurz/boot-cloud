@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="../js/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="../js/bootstrap-fileinput/css/fileinput.min.css" />
+    <title>商品列表</title>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    商品
+                </div>
+
+                <table id="productListDiv" class="table table-bordered">
+                    <tr>
+                        <th>商品名</th>
+                        <th>商品价格</th>
+                        <th>品牌名</th>
+                    </tr>
+
+
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+<script src="../js/jquery-1.12.4.js"></script>
+<!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+<script src="../js/bootstrap/js/bootstrap.min.js"></script>
+<script src="../js/bootstrap-fileinput/js/fileinput.js"></script>
+<script src="../js/bootstrap-fileinput/js/locales/zh.js"></script>
+
+<script>
+    $(function() {
+        initProductList();
+    })
+
+    function initProductList() {
+        $.ajax({
+            type:"get",
+            url:"/products",
+            success:function (result) {
+                if (result.code == 200) {
+                   var v_productList =  result.data;
+                   for (var i = 0; i < v_productList.length; i++) {
+                       var v_tr = "<tr>";
+                       v_tr+="<td>"+v_productList[i].productName+"</td>";
+                       v_tr+="<td>"+v_productList[i].price+"</td>";
+                       v_tr+="<td>"+v_productList[i].brandName+"</td>";
+                       v_tr+="</tr>";
+                       $("#productListDiv").append(v_tr);
+                   }
+                }
+            }
+        })
+    }
+</script>
+</body>
+</html>
